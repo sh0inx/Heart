@@ -14,19 +14,22 @@ public class Command {
     public final String description;
     public final String syntax;
     public final String permission;
+    public final boolean enabled;
 
     public Command() {
         this.aliases = Collections.emptyList();
         this.description = "";
         this.syntax = "";
         this.permission = "";
+        this.enabled = true;
     }
 
-    public Command(List<String> aliases, String description, String syntax, String permission) {
+    public Command(List<String> aliases, String description, String syntax, String permission, boolean enabled) {
         this.aliases = aliases;
         this.description = description;
         this.syntax = syntax;
         this.permission = permission;
+        this.enabled = enabled;
     }
 
     public boolean execute(CommandSender sender, String[] arguments, Heart heart) {

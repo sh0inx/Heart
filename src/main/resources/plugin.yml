@@ -1,4 +1,3 @@
 name: Heart
 version: '${version}'
 main: io.github.sh0inx.heart.Heart
-api-version: '1.20'

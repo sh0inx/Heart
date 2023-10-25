@@ -28,6 +28,7 @@ public abstract class CommandManager implements CommandExecutor, TabCompleter {
 
     public void registerCommands() {
         registerCommand(heart.getCommands().aboutCommand);
+        registerCommand(heart.getCommands().updateCheckCommand);
     }
 
     public void registerCommand(Command command) {

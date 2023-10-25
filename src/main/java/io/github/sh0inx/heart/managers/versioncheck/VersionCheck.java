@@ -43,10 +43,22 @@ public class VersionCheck {
     public static String getVersion() { return Bukkit.getVersion(); }
 
     public static boolean isVersionSupported(String version) {
-        return switch (version) {
-            case "1.20", "1.19", "1.18", "1.17", "1.16", "1.15", "1.14", "1.13" -> true;
-            default -> false;
-        };
+        switch (version) {
+            case "1.20": {}
+            case "1.19": {}
+            case "1.18": {}
+            case "1.17": {}
+            case "1.16": {}
+            case "1.15": {}
+            case "1.14": {}
+            case "1.13": {}
+            case "1.12": {}
+            case "1.11": {}
+            case "1.10": {}
+            case "1.9": {}
+            case "1.8": { return true; }
+            default: return false;
+        }
     }
 
     public static boolean classExists(String className) {
@@ -59,10 +71,12 @@ public class VersionCheck {
     }
 
     public static boolean isPlatformSupported(Platform platform) {
-        return switch (platform) {
-            case Spigot, Paper, Purpur -> true;
-            default -> false;
-        };
+        switch (platform) {
+            case Spigot: {}
+            case Paper: {}
+            case Purpur: { return true; }
+            default: { return false; }
+        }
     }
 
     public static Platform getPlatform() {

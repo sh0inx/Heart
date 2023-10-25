@@ -1,61 +1,39 @@
 package io.github.sh0inx.heart;
 
-import io.github.sh0inx.heart.configs.files.Commands;
-import io.github.sh0inx.heart.managers.CommandManager;
-import io.github.sh0inx.heart.managers.ConfigManager;
-import io.github.sh0inx.heart.managers.versioncheck.ProfileCheck;
-import io.github.sh0inx.heart.managers.versioncheck.UpdateCheck;
-import io.github.sh0inx.heart.managers.versioncheck.VersionCheck;
+import io.github.sh0inx.heart.configs.*;
+import io.github.sh0inx.heart.managers.*;
+import io.github.sh0inx.heart.managers.versioncheck.*;
 
-import org.bukkit.NamespacedKey;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.java.JavaPluginLoader;
 
 import java.io.File;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@NoArgsConstructor
 public abstract class Heart extends JavaPlugin {
 
-    //variables
-    public final int getBstatsPluginId = 00000;
-    public final String getModrinthPluginId = "";
-    public final String getModrinthLink = "https://modrinth.com/plugin/" + getModrinthPluginId;
-    String githubIssues;
-    String consoleDecorator;
-    public Profile profile;
-    public abstract UpdateCheck getUpdateCheck();
-    public abstract VersionCheck getVersionCheck();
-    public abstract ProfileCheck getProfileCheck();
-    public abstract ConfigManager configManager();
-    public abstract CommandManager commandManager();
-    public abstract Commands getCommands();
-
     private static Heart instance;
-    protected Heart() {
-    }
 
     public Heart(JavaPluginLoader loader, PluginDescriptionFile description, File dataFolder, File file) {
         super(loader, description, dataFolder, file);
     }
 
-
-    private final NamespacedKey key = new NamespacedKey(this, "heart");
-
-    public NamespacedKey getKey() {
-        return key;
-    }
-
-    //override methods
     @Override
     public void onLoad() {
         getDataFolder().mkdir();
+        this.persist = new Persist(Persist.PersistType.YAML, this);
     }
 
     @Override
     public void onEnable() {
-        instance = this;
-        initializeManagers();
-        loadConfigs();
+        startServerCheck();
         initializeManagers();
         registerListeners();
         consoleMessage(MessageType.ENABLE);
@@ -67,33 +45,53 @@ public abstract class Heart extends JavaPlugin {
         consoleMessage(MessageType.DISABLE);
     }
 
+    //variables
+    public int bstatsPluginID = 00000;
+    public String modrinthPluginId = "";
+    public String modrinthLink = "https://modrinth.com/plugin/" + modrinthPluginId;
+    String githubIssues;
+    String consoleDecorator;
+    @Getter
+    private Persist persist;
+    public Profile profile;
+
+    public abstract UpdateCheck getUpdateCheck();
+    public abstract VersionCheck getVersionCheck();
+    public abstract ProfileCheck getProfileCheck();
+    public abstract CommandManager getCommandManager();
+    public abstract ConfigManager getConfigManager();
+
+    public abstract PluginConfiguration getPluginConfiguration();
+    public abstract Commands getCommands();
+    public abstract Messages getMessages();
+
     //plugin methods
     public void initializeManagers() {
-        loadConfigs();
-        commandManager().registerCommands();
+        getConfigManager().initializeConfigs();
+        getCommandManager().registerCommands();
     }
 
     public void registerListeners() {
 
     }
 
-    public void loadConfigs() {
-        configManager().reloadConfigs();
-    }
-
     public void logMessage(MessageType messageType, String message) {
         switch(messageType) {
-            case LOG -> {
+            case LOG: {
                 getLogger().info(message);
+                break;
             }
-            case WARNING -> {
+            case WARNING: {
                 getLogger().warning(message);
+                break;
             }
-            case ERROR -> {
+            case ERROR: {
                 pluginError(message);
+                break;
             }
-            case TRACE -> {
+            case TRACE: {
                 getLogger().info("*trace*: " + message);
+                break;
             }
         }
     }
@@ -117,18 +115,22 @@ public abstract class Heart extends JavaPlugin {
         getLogger().info(consoleDecorator);
         getLogger().info("");
         switch (messageType) {
-            case ENABLE -> {
+            case ENABLE: {
                 getLogger().info(getDescription().getName() + " enabled successfully.");
+                break;
             }
-            case DISABLE -> {
+            case DISABLE: {
                 getLogger().info(getDescription().getName() + " disabled successfully.");
+                break;
             }
-            case PROFILE -> {
+            case PROFILE: {
                 getLogger().info(getDescription().getName() + " profile set to " + profile);
+                break;
             }
-            case UPDATE -> {
+            case UPDATE: {
                 getLogger().info("There's a new version of " + getDescription().getName() + " available!");
-                getLogger().info("Download it here: " + getModrinthLink);
+                getLogger().info("Download it here: " + modrinthLink);
+                break;
             }
         }
         getLogger().info("");
@@ -136,11 +138,9 @@ public abstract class Heart extends JavaPlugin {
     }
 
     public void startUpdateCheck() {
-
-        getVersionCheck().checkVersion();
-        getVersionCheck().checkPlatform();
-
-        profile = getProfileCheck().determineProfile();
+        if(!getPluginConfiguration().checkForUpdates) {
+            return;
+        }
 
         if(getUpdateCheck().getCurrentVersion().equalsIgnoreCase("404")) { return; }
 
@@ -152,7 +152,15 @@ public abstract class Heart extends JavaPlugin {
         logMessage(MessageType.LOG, "You're running the latest version of " + getDescription().getName() + " (" + getDescription().getVersion() + ").");
     }
 
-    public static Heart getInstance() {
-        return instance;
+    public void startServerCheck() {
+        getVersionCheck().checkVersion();
+        getVersionCheck().checkPlatform();
+
+        profile = getProfileCheck().determineProfile();
     }
+
+    public void addBstats(int bstatsPluginID) {
+        new Metrics(this, bstatsPluginID);
+    }
+
 }

@@ -25,7 +25,7 @@ public class UpdateCheck {
         int responseCode = 0;
 
         try {
-            URL url = new URL("https://api.modrinth.com/v2/project/" + heart.getModrinthPluginId + "/version");
+            URL url = new URL("https://api.modrinth.com/v2/project/" + heart.modrinthPluginId + "/version");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.connect();
